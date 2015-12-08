@@ -27,38 +27,38 @@ instance Default Todo where
   def = Todo { _todo_tasks = []
              }
 
-data Action = Quit
-            | AddTask
-            | DeleteTask
-            | ListTasks
+data Command = Quit
+             | AddTask
+             | DeleteTask
+             | ListTasks
   deriving (Show, Read, Eq, Enum, Bounded, GHC.Generic)
-makePrisms ''Action
+makePrisms ''Command
 
 ----------
 
 data Vocab a where
-  GetActionMay :: (Maybe Action -> a) -> Vocab a
+  GetCommandMay :: (Maybe Command -> a) -> Vocab a
   PutInfo :: String -> a -> Vocab a 
-  ListActions :: a -> Vocab a
+  ListCommands :: a -> Vocab a
   GetTask :: (Task -> a) -> Vocab a
   GetIdMay :: (Maybe Id -> a) -> Vocab a
 
 instance Functor Vocab where
   fmap f = \case
-    GetActionMay g -> GetActionMay (f . g)
+    GetCommandMay g -> GetCommandMay (f . g)
     PutInfo s a -> PutInfo s (f a)
-    ListActions a -> ListActions (f a)
+    ListCommands a -> ListCommands (f a)
     GetTask g -> GetTask (f . g)
     GetIdMay g -> GetIdMay (f . g)
 
-getActionMay :: MonadFree Vocab m => m (Maybe Action)
-getActionMay = liftF $ GetActionMay id
+getCommandMay :: MonadFree Vocab m => m (Maybe Command)
+getCommandMay = liftF $ GetCommandMay id
 
 putInfo :: MonadFree Vocab m => String -> m ()
 putInfo s = liftF $ PutInfo s ()
 
-listActions :: MonadFree Vocab m => m ()
-listActions = liftF $ ListActions ()
+listCommands :: MonadFree Vocab m => m ()
+listCommands = liftF $ ListCommands ()
 
 getTask :: MonadFree Vocab m => m Task
 getTask = liftF $ GetTask id
@@ -72,17 +72,17 @@ eval :: Free Vocab () -> IO ()
 eval = \case
   Pure x -> return x
   Free y -> case y of
-    GetActionMay g -> do
+    GetCommandMay g -> do
       l <- getLine
       let mn = readMay l :: Maybe Int
-          ma = (mn >>= toEnumMay) :: Maybe Action
+          ma = (mn >>= toEnumMay) :: Maybe Command
       eval $ g ma
     PutInfo s a -> do
       putStrLn $ s
       hFlush stdout
       eval a
-    ListActions a -> do
-      let xs :: [Action]
+    ListCommands a -> do
+      let xs :: [Command]
           xs = [minBound .. maxBound]
       putStrLn . show $ zip [(0 :: Int) ..] xs
       eval a
@@ -96,17 +96,17 @@ eval = \case
 
 ----------
 
-askAction :: ( MonadFree Vocab m
+askCommand :: ( MonadFree Vocab m
 --              , MonadState Todo m
-             ) => m Action
-askAction = do
-  putInfo "Please select the next action."
-  listActions
-  ma <- getActionMay
+              ) => m Command
+askCommand = do
+  putInfo "Please select the next command."
+  listCommands
+  ma <- getCommandMay
   case ma of
     Nothing -> do
-      putInfo "No action selected."
-      askAction
+      putInfo "No command selected."
+      askCommand
     Just a -> do
       return a
 
@@ -144,10 +144,10 @@ promptInfo :: ( MonadFree Vocab m
               ) => String -> m ()
 promptInfo = putInfo . ("EFFECT: " ++)
 
-processAction :: ( MonadFree Vocab m
+processCommand :: ( MonadFree Vocab m
                  , MonadState Todo m
-                 ) => Action -> m ()
-processAction = \case
+                 ) => Command -> m ()
+processCommand = \case
   Quit -> do
     promptInfo $ "Good bye!\n"
   AddTask -> do
@@ -169,15 +169,15 @@ processAction = \case
     nmax <- dispTasks
     promptInfo $ (show nmax) ++ " task(s) observed in the list.\n"  
 
-performAction :: (MonadFree Vocab m, MonadState Todo m) => m Action
-performAction = do
-  a <- askAction
-  processAction a
+performCommand :: (MonadFree Vocab m, MonadState Todo m) => m Command
+performCommand = do
+  a <- askCommand
+  processCommand a
   return a
 
 mySession :: MonadFree Vocab m => Todo -> m ()
 mySession t0 = do
-  (a, t1) <- (flip runStateT) t0 $ performAction
+  (a, t1) <- (flip runStateT) t0 $ performCommand
   either (const $ mySession t1) return $ matching _Quit a
 
 ----------

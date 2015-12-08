@@ -1,0 +1,17 @@
+# free-running
+
+*Free as in left adjoint to forgetful.*
+
+This repository contains a collection of examples related to the usage of a *free monad*.
+
+### helloFree.hs
+
+This example illustrates how to implement a simple loop where the computer first asks your name, and then replies with a hello greeting. The dialogue is first described as an action in a free monad corresponding to the base functor with a pair of constructors termed *AskName* and *SayHello*. After that one defines a natural transformation from this free monad to the IO monad. 
+
+### todoFree.hs
+
+This example is a generalization of `helloFree.hs` where we implement a todo list over a free monad. This is a simplified version of the command line tool [todotxt](http://todotxt.com/). The new aspect here is that the actions related to the todo list require the functionality of a *state monad*.
+
+### helloFreeReflex.hs
+
+This example shows how to combine a free monad with functional reactive programming (FRP). You need to install the [Reflex-DOM](https://github.com/ryantrinkle/reflex-dom) library to run the corresponding code. The easiest way to do it is to follow the approach suggested at [try-reflex](https://github.com/ryantrinkle/reflex-dom), or you might also find useful the instructions [here](https://github.com/artuuge/reflex-arc). The idea to combine the flow control over a free monad with FRP in Reflex comes from [control-flow-playground](https://github.com/anderspapitto/control-flow-playground), so, basically, the present example is a re-implementation of this idea with slightly different types. All functions are total in a natural way. 
