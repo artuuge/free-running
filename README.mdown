@@ -18,3 +18,7 @@ It is of interest to compare this code with an FRP implementation which you can 
 ### helloFreeReflex.hs
 
 This example shows how to combine a free monad with functional reactive programming (FRP). You need to install the [Reflex-DOM](https://github.com/ryantrinkle/reflex-dom) library to run the corresponding code. The easiest way to do it is to follow the approach suggested at [try-reflex](https://github.com/ryantrinkle/reflex-dom), or you might also find useful the instructions [here](https://github.com/artuuge/reflex-arc). The idea to combine the flow control over a free monad with FRP in Reflex comes from [control-flow-playground](https://github.com/anderspapitto/control-flow-playground), so, basically, the present example is a re-implementation of this idea with slightly different types. All functions are total in a natural way. 
+
+### todoFreeReflex.hs
+
+This is an extension of the FRP implementation of a [todo list example](https://github.com/artuuge/reflex-examples) in Reflex. The key insight is that whenever one has a `foldDyn` in the source code, there is a possibility to organize a computation via a free monad. We define a computation termed `freeFoldDyn` and use it to replace `foldDyn` three times: in the update of the list of tasks induced by the data entered by the user, in the update of the visibility state, and in the update of the name of the button to show and hide the list. This yields three distinct free monads corresponding to different but similar base functors. 
