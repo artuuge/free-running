@@ -145,8 +145,8 @@ promptInfo :: ( MonadFree Vocab m
 promptInfo = putInfo . ("EFFECT: " ++)
 
 processCommand :: ( MonadFree Vocab m
-                 , MonadState Todo m
-                 ) => Command -> m ()
+                  , MonadState Todo m
+                  ) => Command -> m ()
 processCommand = \case
   Quit -> do
     promptInfo $ "Good bye!\n"
